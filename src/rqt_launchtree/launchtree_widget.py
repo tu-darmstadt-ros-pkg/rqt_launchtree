@@ -101,9 +101,13 @@ class LaunchtreeWidget(QWidget):
 
 	def _load_launch_items(self, filename):
 		self._launch_config = LaunchtreeConfig()
-		loader = LaunchtreeLoader()
-		loader.load(filename, self._launch_config, verbose=False)
-		items = self.display_config_tree(self._launch_config.tree)
+		items = list()
+		try:
+			loader = LaunchtreeLoader()
+			loader.load(filename, self._launch_config, verbose=False)
+			items = self.display_config_tree(self._launch_config.tree)
+		except roslaunch.xmlloader.XmlParseException as e:
+			rospy.logerr('Invalid launch file:\n%s' % str(e))
 		self.update_launch_view.emit(items)
 
 
