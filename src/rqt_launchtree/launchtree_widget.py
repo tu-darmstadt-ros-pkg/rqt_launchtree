@@ -2,6 +2,7 @@
 import os
 import yaml
 import threading
+import itertools
 
 import rospy
 import rospkg
@@ -90,7 +91,6 @@ class LaunchtreeWidget(QWidget):
 		self.launch_view.clear()
 		filename = os.path.join(
 			self._rp.get_path(self.package_select.currentText()),
-			'launch',
 			self.launchfile_select.currentText()
 		)
 		if os.path.isfile(filename):
@@ -149,29 +149,41 @@ class LaunchtreeWidget(QWidget):
 		self._load_thread = None
 
 	def update_package_list(self):
-		self._package_list = sorted(filter(lambda p:
-			os.path.isdir(os.path.join(self._rp.get_path(p), 'launch')),
-			self._rp.list()
-		))
+		self._package_list = sorted(
+			filter(lambda p: len(self._get_launch_files(self._rp.get_path(p)))>0,
+				self._rp.list()
+			)
+		)
 		self.package_select.clear()
 		self.package_select.addItems(self._package_list)
 		self.package_select.setCurrentIndex(0)
 
 	def update_launchfiles(self, idx):
 		package = self.package_select.itemText(idx)
-		folder = os.path.join(self._rp.get_path(package), 'launch')
-		launchfiles = sorted(
-			map(lambda p: os.path.split(p)[1],
-				filter(os.path.isfile, 
-					map(lambda f: os.path.join(folder, f),
-						os.listdir(folder)
+		folder = self._rp.get_path(package)
+		launchfiles = self._get_launch_files(folder)
+		self.launchfile_select.clear()
+		self.launchfile_select.addItems(launchfiles)
+
+	def _get_launch_files(self, path):
+		return sorted(
+			itertools.imap(lambda p: p.replace(path + '/', ''),
+				itertools.ifilter(self._is_launch_file,
+					itertools.chain.from_iterable(
+						itertools.imap(lambda f:
+							map(lambda n: os.path.join(f[0], n), f[2]),
+							os.walk(path)
+						)
 					)
 				)
 			)
 		)
-		self.launchfile_select.clear()
-		self.launchfile_select.addItems(launchfiles)
 
+	def _is_launch_file(self, path):
+		if not os.path.isfile(path): return False
+		(root, ext) = os.path.splitext(path)
+		if ext != '.launch': return False
+		return True
 
 	def launch_entry_changed(self, current, previous):
 		#clear properties
@@ -297,7 +309,6 @@ class LaunchtreeWidget(QWidget):
 	def _root_open_clicked(self):
 		filename = os.path.join(
 			self._rp.get_path(self.package_select.currentText()),
-			'launch',
 			self.launchfile_select.currentText()
 		)
 		thread = threading.Thread(target=os.system, args=['gedit %s' % filename])
