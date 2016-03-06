@@ -56,12 +56,11 @@ class LaunchtreeConfig(ROSLaunchConfig):
 
 	def add_param(self, p, filename=None, verbose=True):
 		p.inconsistent = False
-		# disable parameter inconsistency check for now, unclear if desired
-		# if p.key in self.params and (p.value != self.params[p.key].value or self.params[p.key].inconsistent):
-		# 	p.inconsistent = True
-		# 	self.params[p.key].inconsistent = True
-		# 	rospy.logwarn('Inconsistent param: %s\n  - %s: %s\n  - %s: %s' % 
-		# 		(p.key, p.key, str(p.value), self.params[p.key].key, str(self.params[p.key].value)))
+		if p.key in self.params and (p.value != self.params[p.key].value or self.params[p.key].inconsistent):
+			p.inconsistent = True
+			self.params[p.key].inconsistent = True
+			rospy.logwarn('Inconsistent param: %s\n  - %s: %s\n  - %s: %s' % 
+				(p.key, p.key, str(p.value), self.params[p.key].key, str(self.params[p.key].value)))
 		result = super(LaunchtreeConfig, self).add_param(p, filename, verbose)
 		self._add_to_tree(p.key, p)
 		return result
