@@ -94,7 +94,7 @@ class LaunchtreeWidget(QWidget):
 			self.launchfile_select.currentText()
 		)
 		if os.path.isfile(filename):
-			self.progress_bar.setValue(self.progress_bar.minimum())
+			self.progress_bar.setRange(0,0)
 			self._load_thread = threading.Thread(target=self._load_launch_items, args=[filename])
 			self._load_thread.daemon = True
 			self._load_thread.start()
@@ -144,7 +144,8 @@ class LaunchtreeWidget(QWidget):
 		self.launch_view.addTopLevelItems(items)
 		self.launch_view.sortItems(0, Qt.AscendingOrder)
 		self._filter_launch_view()
-		self.progress_bar.setValue(self.progress_bar.maximum())
+		self.progress_bar.setRange(0,1)
+		self.progress_bar.setValue(1)
 		self._load_thread = None
 
 	def update_package_list(self):
