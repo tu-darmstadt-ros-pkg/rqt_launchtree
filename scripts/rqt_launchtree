@@ -5,4 +5,4 @@ import sys
 from rqt_gui.main import Main
 
 main = Main()
-sys.exit(main.main(standalone='rqt_launchtree.blaunchtree_plugin.LaunchtreePlugin'))
+sys.exit(main.main(standalone='rqt_launchtree.launchtree_plugin.LaunchtreePlugin'))
