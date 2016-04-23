@@ -267,7 +267,7 @@ class LaunchtreeWidget(QWidget):
 		expand = not collapse and highlight
 
 		def filter_launch_entry(entry):
-			show = True
+			show = False
 
 			# param
 			if isinstance(entry.instance, roslaunch.core.Param):
@@ -282,15 +282,14 @@ class LaunchtreeWidget(QWidget):
 			elif isinstance(entry.instance, LaunchtreeRemap):
 				show = show_remaps
 
+			show &= search_text in entry.text(0)
+			if show:
+				entry.setBackgroundColor(0, self._highlight_color if highlight else self._neutral_color)
+
 			if entry.childCount() > 0:
 				not_empty = any(map(filter_launch_entry, map(entry.child, range(entry.childCount()))))
-				show &= show_empty or not_empty
+				show |= show_empty or not_empty
 				entry.setExpanded(not collapse and (expand or entry.isExpanded()))
-
-			else:
-				show &= search_text in entry.text(0)
-				if show:
-					entry.setBackgroundColor(0, self._highlight_color if highlight else self._neutral_color)
 
 			entry.setHidden(not show)
 			return show
