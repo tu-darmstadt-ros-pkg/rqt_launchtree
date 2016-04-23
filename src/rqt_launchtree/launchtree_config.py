@@ -28,8 +28,12 @@ class LaunchtreeConfig(ROSLaunchConfig):
 
 		self._tree_stack = list()
 		self.tree = dict()
+		self.idx = 0
 
-	def push_level(self, tree_level):
+	def push_level(self, tree_level, unique=False):
+		if unique:
+			tree_level += ':%d' % self.idx
+			self.idx += 1
 		self._tree_stack.append(tree_level)
 
 	def pop_level(self):

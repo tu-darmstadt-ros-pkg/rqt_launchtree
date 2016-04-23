@@ -114,7 +114,7 @@ class LaunchtreeWidget(QWidget):
 			loader = LaunchtreeLoader()
 			loader.load(filename, self._launch_config, verbose=False, argv=['','',''] + launchargs)
 			items = self.display_config_tree(self._launch_config.tree)
-		except roslaunch.xmlloader.XmlParseException as e:
+		except Exception as e:
 			error_msg = re.sub(r'(\[?(?:/\w+)+\.launch\]?)',
 				lambda m: '[%s]'%self._filename_to_label(m.group(0)),
 				str(e)
@@ -140,7 +140,7 @@ class LaunchtreeWidget(QWidget):
 				i.addChildren(childItems)
 				i.instance = instance.get('_root', instance)
 			if isinstance(i.instance, dict):
-				i.setText(0, self._filename_to_label(key))
+				i.setText(0, self._filename_to_label(key.split(':')[0]))
 				i.setIcon(0, self._icon_include if not i.inconsistent else self._icon_warn)
 			else:
 				i.setText(0, key)
@@ -209,20 +209,7 @@ class LaunchtreeWidget(QWidget):
 		#clear properties
 		if current is None:
 			return
-		# traverse displayed tree up
-		tree_path = list()
-		item = current
-		while item is not None:
-			key = item.text(0)
-			if self._launch_separator in key:
-				(p, l) = key.split(self._launch_separator)
-				key = os.path.join(self._rp.get_path(p), l)
-			item = item.parent()
-			tree_path.append(key)
-		# traverse model tree down
-		data = self._launch_config.tree
-		for key in reversed(tree_path):
-			data = data[key]
+		data = current.instance
 		if isinstance(data, dict) and data.has_key('_root'):
 			data = data['_root']
 		if isinstance(data, roslaunch.core.Param):

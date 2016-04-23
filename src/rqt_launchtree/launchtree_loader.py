@@ -10,7 +10,7 @@ class LaunchtreeLoader(XmlLoader):
 
 	def _include_tag(self, tag, context, ros_config, default_machine, is_core, verbose):
 		inc_filename = self.resolve_args(tag.attributes['file'].value, context)
-		ros_config.push_level(inc_filename)
+		ros_config.push_level(inc_filename, unique=True)
 		result = super(LaunchtreeLoader, self)._include_tag(tag, context, ros_config, default_machine, is_core, verbose)
 		ros_config.pop_level()
 		return result
