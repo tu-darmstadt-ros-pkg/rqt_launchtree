@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import os
+import re
 import yaml
 import threading
 import itertools
@@ -34,6 +35,7 @@ class LaunchtreeEntryItem(QTreeWidgetItem):
 class LaunchtreeWidget(QWidget):
 
 	update_launch_view = Signal(object)
+	display_load_error = Signal(str, str)
 
 	def __init__(self, context):
 		super(LaunchtreeWidget, self).__init__()
@@ -62,6 +64,7 @@ class LaunchtreeWidget(QWidget):
 
 		# connect signals
 		self.update_launch_view.connect(self._update_launch_view)
+		self.display_load_error.connect(self._display_load_error)
 		self.package_select.currentIndexChanged.connect(self.update_launchfiles)
 		self.launchfile_select.currentIndexChanged.connect(lambda idx: self.load_launchfile())
 		self.reload_button.clicked.connect(self.load_launchfile)
@@ -83,31 +86,41 @@ class LaunchtreeWidget(QWidget):
 		self._package_list = list()
 		self._load_thread = None
 		self.properties_content.setCurrentIndex(0)
+		self.main_view.setCurrentIndex(0)
 
 		self.update_package_list()
 		
 
 	def load_launchfile(self):
 		self.launch_view.clear()
+		self.main_view.setCurrentIndex(0)
 		filename = os.path.join(
 			self._rp.get_path(self.package_select.currentText()),
 			self.launchfile_select.currentText()
 		)
+		launchargs = roslaunch.substitution_args.resolve_args(self.args_input.text()).split(' ')
 		if os.path.isfile(filename):
 			self.progress_bar.setRange(0,0)
-			self._load_thread = threading.Thread(target=self._load_launch_items, args=[filename])
+			self._load_thread = threading.Thread(target=self._load_launch_items, args=[filename, launchargs])
 			self._load_thread.daemon = True
 			self._load_thread.start()
 
-	def _load_launch_items(self, filename):
+	def _load_launch_items(self, filename, launchargs):
 		self._launch_config = LaunchtreeConfig()
 		items = list()
 		try:
 			loader = LaunchtreeLoader()
-			loader.load(filename, self._launch_config, verbose=False)
+			loader.load(filename, self._launch_config, verbose=False, argv=['','',''] + launchargs)
 			items = self.display_config_tree(self._launch_config.tree)
 		except roslaunch.xmlloader.XmlParseException as e:
-			rospy.logerr('Invalid launch file:\n%s' % str(e))
+			error_msg = re.sub(r'(\[?(?:/\w+)+\.launch\]?)',
+				lambda m: '[%s]'%self._filename_to_label(m.group(0)),
+				str(e)
+			)
+			help_msg = ''
+			if 'arg to be set' in str(e):
+				help_msg = 'You can pass args to the root launch file by specifying them in the "args" input field, for example "arg_key:=arg_value".'
+			self.display_load_error.emit(error_msg, help_msg)
 		self.update_launch_view.emit(items)
 
 
@@ -138,6 +151,11 @@ class LaunchtreeWidget(QWidget):
 					self._icon_default)
 			items.append(i)
 		return items
+
+	def _display_load_error(self, error_msg, help_msg):
+		self.error_label.setText(error_msg)
+		self.help_label.setText(help_msg)
+		self.main_view.setCurrentIndex(1)
 
 	def _update_launch_view(self, items):
 		self.launch_view.clear()
