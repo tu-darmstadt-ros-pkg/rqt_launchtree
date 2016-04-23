@@ -45,6 +45,8 @@ class LaunchtreeWidget(QWidget):
 		ui_file = os.path.join(res_folder, 'launchtree_widget.ui')
 		loadUi(ui_file, self)
 
+		self.editor = 'gedit' # configure via settings
+
 		self.setObjectName('LaunchtreeWidget')
 		self.reload_button.setIcon(QIcon.fromTheme('view-refresh'))
 
@@ -319,7 +321,7 @@ class LaunchtreeWidget(QWidget):
 	def _launch_open_clicked(self):
 		(p, l) = self.launch_view.currentItem().text(0).split(self._launch_separator)
 		filename = os.path.join(self._rp.get_path(p), l)
-		thread = threading.Thread(target=os.system, args=['gedit %s' % filename])
+		thread = threading.Thread(target=os.system, args=['%s %s' % (self.editor, filename)])
 		thread.daemon = True
 		thread.start()
 
@@ -328,21 +330,13 @@ class LaunchtreeWidget(QWidget):
 			self._rp.get_path(self.package_select.currentText()),
 			self.launchfile_select.currentText()
 		)
-		thread = threading.Thread(target=os.system, args=['gedit %s' % filename])
+		thread = threading.Thread(target=os.system, args=['%s %s' % (self.editor, filename)])
 		thread.daemon = True
 		thread.start()
 
 
-				
 	def shutdown(self):
 		pass
-
-	def save_settings(self, plugin_settings, instance_settings):
-		pass
-
-	def restore_settings(self, plugin_settings, instance_settings):
-		pass
-
 
 	def _filename_to_label(self, filename):
 		tail = list()
