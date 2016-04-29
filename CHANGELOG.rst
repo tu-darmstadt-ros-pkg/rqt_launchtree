@@ -2,8 +2,8 @@
 Changelog for package rqt_launchtree
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.1.2 (2016-04-29)
+------------------
 * Changed maintainer email to avoid wrong impression about company involvement
 * Contributors: Philipp Schillinger
 
