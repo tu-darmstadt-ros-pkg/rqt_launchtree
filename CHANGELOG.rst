@@ -2,8 +2,8 @@
 Changelog for package rqt_launchtree
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.1.3 (2016-05-07)
+------------------
 * Improved support for rosparam file includes
 * Contributors: Philipp Schillinger
 
