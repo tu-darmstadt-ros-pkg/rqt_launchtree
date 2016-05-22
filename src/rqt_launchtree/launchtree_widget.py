@@ -302,6 +302,9 @@ class LaunchtreeWidget(QWidget):
 			# node
 			elif isinstance(entry.instance, roslaunch.core.Node):
 				show = show_nodes
+			# machine (no separate option to display machines, is coupled to nodes)
+			elif isinstance(entry.instance, roslaunch.core.Machine):
+				show = show_nodes
 			# arg
 			elif isinstance(entry.instance, LaunchtreeArg):
 				show = show_args
