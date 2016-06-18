@@ -97,6 +97,7 @@ class LaunchtreeWidget(QWidget):
 
 	def load_launchfile(self):
 		self.launch_view.clear()
+		self.properties_content.setCurrentIndex(0)
 		self.main_view.setCurrentIndex(0)
 		filename = os.path.join(
 			self._rp.get_path(self.package_select.currentText()),
