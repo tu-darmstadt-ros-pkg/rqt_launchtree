@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import rospy
 from rqt_gui_py.plugin import Plugin
 
 from python_qt_binding.QtCore import Qt
@@ -8,6 +9,9 @@ from rqt_launchtree.launchtree_widget import LaunchtreeWidget
 
 
 class LaunchtreePlugin(Plugin):
+
+    _SETTING_LASTPKG = 'last_pkg'
+    _SETTING_LASTLAUNCHFILE = 'last_launch'
 
     def __init__(self, context):
         super(LaunchtreePlugin, self).__init__(context)
@@ -23,9 +27,15 @@ class LaunchtreePlugin(Plugin):
 
     def save_settings(self, plugin_settings, instance_settings):
         instance_settings.set_value('editor', self._widget.editor)
+        _curr_index = self._widget.package_select.currentIndex()
+        rospy.logdebug('save_settings) currentIndex={}'.format(_curr_index))
+        instance_settings.set_value(self._SETTING_LASTPKG, _curr_index)
+        instance_settings.set_value(self._SETTING_LASTLAUNCHFILE, self._widget.launchfile_select.currentIndex())
 
     def restore_settings(self, plugin_settings, instance_settings):
         self._widget.editor = instance_settings.value('editor', 'gedit')
+        self._widget.package_select.setCurrentIndex(int(instance_settings.value(self._SETTING_LASTPKG)))
+        self._widget.launchfile_select.setCurrentIndex(int(instance_settings.value(self._SETTING_LASTLAUNCHFILE)))
 
     def trigger_configuration(self):
         (text, ok) = QInputDialog.getText(self._widget,
