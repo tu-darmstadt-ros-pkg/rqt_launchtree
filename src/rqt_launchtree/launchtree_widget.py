@@ -322,7 +322,26 @@ class LaunchtreeWidget(QWidget):
 			elif isinstance(entry.instance, LaunchtreeRemap):
 				show = show_remaps
 
-			show &= search_text in entry.text(0)
+			if search_text:
+				search_text_contained_in_meta = False
+				if isinstance(entry.instance, roslaunch.core.Param):
+					search_text_contained_in_meta = search_text in entry.instance.key
+					if entry.instance.value:
+						search_text_contained_in_meta |= search_text in str(entry.instance.value)
+				# node
+				elif isinstance(entry.instance, roslaunch.core.Node):
+					search_text_contained_in_meta = search_text in entry.instance.package or search_text in entry.instance.type
+				# arg
+				elif isinstance(entry.instance, LaunchtreeArg):
+					search_text_contained_in_meta = search_text in entry.instance.name
+					if entry.instance.value:
+						search_text_contained_in_meta |= search_text in str(entry.instance.value)
+				# remap
+				elif isinstance(entry.instance, LaunchtreeRemap):
+					search_text_contained_in_meta = search_text in entry.instance.from_topic or search_text in entry.instance.to_topic
+
+				show &= (search_text in entry.text(0)) or search_text_contained_in_meta
+
 			if show:
 				entry.setBackgroundColor(0, self._highlight_color if highlight else self._neutral_color)
 
