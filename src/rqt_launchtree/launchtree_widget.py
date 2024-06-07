@@ -14,7 +14,8 @@ from rqt_launchtree.launchtree_config import LaunchtreeConfig, LaunchtreeArg, La
 
 from python_qt_binding import loadUi
 from python_qt_binding.QtCore import Qt, Signal
-from python_qt_binding.QtGui import QFileDialog, QWidget, QIcon, QTreeWidgetItem, QColor
+from python_qt_binding.QtWidgets import QFileDialog, QWidget, QTreeWidgetItem
+from python_qt_binding.QtGui import QIcon, QColor
 
 class LaunchtreeEntryItem(QTreeWidgetItem):
 	_type_order = [dict, roslaunch.core.Node, LaunchtreeRosparam, roslaunch.core.Param, LaunchtreeRemap, LaunchtreeArg, object]
@@ -23,8 +24,8 @@ class LaunchtreeEntryItem(QTreeWidgetItem):
 		super(LaunchtreeEntryItem, self).__init__(*args, **kw)
 		self.inconsistent = False
 	def __ge__(self, other):
-		own_type_idx = map(lambda t: isinstance(self.instance, t), self._type_order).index(True)
-		other_type_idx = map(lambda t: isinstance(other.instance, t), self._type_order).index(True)
+		own_type_idx = list(map(lambda t: isinstance(self.instance, t), self._type_order)).index(True)
+		other_type_idx = list(map(lambda t: isinstance(other.instance, t), self._type_order)).index(True)
 		if own_type_idx != other_type_idx:
 			return own_type_idx >= other_type_idx
 		return self.text(0) >= other.text(0)
@@ -198,10 +199,10 @@ class LaunchtreeWidget(QWidget):
 
 	def _get_launch_files(self, path):
 		return sorted(
-			itertools.imap(lambda p: p.replace(path + '/', ''),
-				itertools.ifilter(self._is_launch_file,
+			map(lambda p: p.replace(path + '/', ''),
+				filter(self._is_launch_file,
 					itertools.chain.from_iterable(
-						itertools.imap(lambda f:
+						map(lambda f:
 							map(lambda n: os.path.join(f[0], n), f[2]),
 							os.walk(path)
 						)
@@ -221,7 +222,7 @@ class LaunchtreeWidget(QWidget):
 		if current is None:
 			return
 		data = current.instance
-		if isinstance(data, dict) and data.has_key('_root'):
+		if isinstance(data, dict) and '_root' in data:
 			data = data['_root']
 		if isinstance(data, roslaunch.core.Param):
 			self.properties_content.setCurrentIndex(1)
@@ -321,7 +322,7 @@ class LaunchtreeWidget(QWidget):
 
 			show &= search_text in entry.text(0)
 			if show:
-				entry.setBackgroundColor(0, self._highlight_color if highlight else self._neutral_color)
+				entry.setBackground(0, self._highlight_color if highlight else self._neutral_color)
 
 			if entry.childCount() > 0:
 				not_empty = any(map(filter_launch_entry, map(entry.child, range(entry.childCount()))))

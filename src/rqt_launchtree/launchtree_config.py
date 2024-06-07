@@ -62,7 +62,7 @@ class LaunchtreeConfig(ROSLaunchConfig):
 				level[launch + ':%d' % self.idx] = old_instance
 				self.idx += 1
 			level = level[launch]
-		if level.has_key(key):
+		if key in level:
 			if isinstance(level[key], dict) and not '_root' in level[key]:
 				# this assumes that the root is added right after its children
 				level[key]['_root'] = instance
